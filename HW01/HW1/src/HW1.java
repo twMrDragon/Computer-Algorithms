@@ -213,21 +213,23 @@ class Battle { // represents a battle game
 	boolean oneRound() {
 		if (isOver())
 			return false;
+		int card1 = player1.cards.removeFirst();
+		int card2 = player2.cards.removeFirst();
 		if (turn) {
-			trick.pick(player1);
-			trick.pick(player2);
+			trick.cards.add(card1);
+			trick.cards.add(card2);
 		} else {
-			trick.pick(player2);
-			trick.pick(player1);
+			trick.cards.add(card2);
+			trick.cards.add(card1);
 		}
 		if(ableToTrun)
 			turn = !turn;
 
 		int l = trick.cards.size();
-		if (trick.cards.get(l - 2) > trick.cards.get(l - 1)) {
+		if (card1 > card2) {
 			player1.pickAll(trick);
 			return true;
-		} else if (trick.cards.get(l - 2) < trick.cards.get(l - 1)) {
+		} else if (card1 < card2) {
 			player2.pickAll(trick);
 			return true;
 		} else {

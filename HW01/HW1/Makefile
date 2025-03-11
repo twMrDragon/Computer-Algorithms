@@ -17,10 +17,10 @@ compile_tests: $(TEST_SOURCES)
 	$(JAVAC) -d $(BIN_DIR) -cp $(BIN_DIR) $(TEST_SOURCES)
 
 # 逐個執行所有 Test 類別
-run_tests: $(TEST_CLASSES)
-	@for %%t in ($(TEST_NAMES)) do ( \
-		echo Running %%t... && \
-		$(JAVA) -ea -cp $(BIN_DIR) %%t \
+run_tests:
+	$(foreach t, $(TEST_NAMES), \
+		echo Running $(t) && $(JAVA) -ea -cp $(BIN_DIR) $(t); \
+		echo ==============================; \
 	)
 
 clean:

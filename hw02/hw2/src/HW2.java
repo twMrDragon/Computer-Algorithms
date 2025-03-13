@@ -114,6 +114,7 @@ class Row { // represent a row of fruits
 // Naive counting
 class CountConfigurationsNaive { // counting of stable configurations
 
+	private static final HashMap<String, Long> memo = new HashMap<String, Long>();
 	// Question 2
 
 	// returning the number of grids whose first lines are r1 and r2,
@@ -123,18 +124,36 @@ class CountConfigurationsNaive { // counting of stable configurations
 			return 0;
 		if (height == 2)
 			return 1;
+
+		String key = r1.toString() + "|" + r2.toString() + "|" + height;
+		if (memo.containsKey(key)) {
+			return	memo.get(key);
+		}
+
 		long result = 0;
-		for (Row row : rows) {
-			if(row.areStackable(r1, r2)){
-				result += count(r1,r2,rows,height-1);
+		for (Row r3 : rows) {
+			if (r3.areStackable(r1, r2)) {
+				result += count(r2, r3, rows, height - 1);
 			}
 		}
+		memo.put(key, result);
 		return result;
 	}
 
 	// returning the number of grids with n lines and n columns
 	static long count(int n) {
-		throw new Error("method count(int n) of the class CountConfigurationsHashNaive to be completed (Question 2)");
+		if (n == 0)
+			return 1;
+		if (n == 1)
+			return 2;
+		LinkedList<Row> rows = Row.allStableRows(n);
+		long result = 0;
+		for (Row r1 : rows) {
+			for (Row r2 : rows) {
+				result += count(r1, r2, rows, n);
+			}
+		}
+		return result;
 	}
 }
 

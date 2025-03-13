@@ -1,4 +1,4 @@
- 
+
 /* HW2. Fruits and hash tables
  * This file contains 7 classes:
  * 		- Row represents a row of fruits,
@@ -9,7 +9,6 @@
  * 		- Triple manipulates triplets,
  * 		- CountConfigurationsHashMap counts stable configurations using the HashMap of java.
  */
-
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -69,33 +68,68 @@ class Row { // represent a row of fruits
 
 	// returns a new row by adding fruit to the end of the row
 	Row extendedWith(int fruit) {
-		throw new Error("method extendedWith(int fruit) to be completed (Question 1)");
+		int newFruits[] = new int[fruits.length + 1];
+		System.arraycopy(fruits, 0, newFruits, 0, fruits.length);
+		newFruits[fruits.length] = fruit;
+		return new Row(newFruits);
 	}
 
 	// return the list of all stable rows of width width
 	static LinkedList<Row> allStableRows(int width) {
-		throw new Error("method allStableRows(int width) to be completed (Question 1)");
+		LinkedList<Row> rows = new LinkedList<Row>();
+		rows.add(new Row());
+		for (int i = 0; i < width; i++) {
+			int n = rows.size();
+			for (int j = 0; j < n; j++) {
+				Row head = rows.removeFirst();
+				if (i < 2) {
+					rows.add(head.extendedWith(0));
+					rows.add(head.extendedWith(1));
+				} else if (head.fruits[i - 1] != head.fruits[i - 2]) {
+					rows.add(head.extendedWith(0));
+					rows.add(head.extendedWith(1));
+				} else if (head.fruits[i - 1] == 0) {
+					rows.add(head.extendedWith(1));
+				} else if (head.fruits[i - 1] == 1) {
+					rows.add(head.extendedWith(0));
+				}
+			}
+		}
+		return rows;
 	}
-
 
 	// check if the row can be stacked with rows r1 and r2
 	// without having three fruits of the same type adjacent
 	boolean areStackable(Row r1, Row r2) {
-		throw new Error("method areStackable(Row r1, Row r2) to be completed (Question 1)");
+		if (fruits.length != r1.fruits.length || fruits.length != r2.fruits.length)
+			return false;
+		for (int i = 0; i < fruits.length; i++) {
+			if (fruits[i] == r1.fruits[i] && fruits[i] == r2.fruits[i])
+				return false;
+		}
+		return true;
 	}
 }
 
 // Naive counting
-class CountConfigurationsNaive {  // counting of stable configurations
+class CountConfigurationsNaive { // counting of stable configurations
 
 	// Question 2
 
 	// returning the number of grids whose first lines are r1 and r2,
 	// whose lines are lines of rows and whose height is height
 	static long count(Row r1, Row r2, LinkedList<Row> rows, int height) {
-		throw new Error(
-				"method count(Row r1, Row r2, LinkedList<Row> rows, int height) of the class CountConfigurationsHashNaive to be completed (Question 2)");
-
+		if (height <= 1)
+			return 0;
+		if (height == 2)
+			return 1;
+		long result = 0;
+		for (Row row : rows) {
+			if(row.areStackable(r1, r2)){
+				result += count(r1,r2,rows,height-1);
+			}
+		}
+		return result;
 	}
 
 	// returning the number of grids with n lines and n columns
@@ -179,7 +213,7 @@ class CountConfigurationsHashTable { // counting of stable configurations using 
 	}
 }
 
-//Use of HashMap
+// Use of HashMap
 
 class Triple { // triplet (r1, r2, height)
 	// to be completed

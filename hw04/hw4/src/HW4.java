@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
+import java.util.Stack;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -95,7 +95,7 @@ class Maze {
 			slow();
 			Cell cell = cells.pop();
 			List<Cell> neighbors = cell.getNeighbors(true);
-			Collections.shuffle(neighbors, new Random(System.currentTimeMillis()));
+			Collections.shuffle(neighbors);
 			for (Cell neighbor : neighbors) {
 				if (neighbor.isIsolated()) {
 					cell.breakWall(neighbor); // break the wall between the two cells
@@ -113,7 +113,55 @@ class Maze {
 	 * generate a maze using Wilson's algorithm
 	 */
 	void generateWilson() {
-		// throw new Error("method generateWilson() to be completed (Question 4)");
+		List<Cell> cells = new ArrayList<>();
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				cells.add(grid[i][j]);
+			}
+		}
+
+		Collections.shuffle(cells);
+		cells.removeFirst().setMarked(true); // first marked point
+		while (true) {
+			slow();
+			cells = new ArrayList<>(cells.stream().filter(c -> !c.isMarked()).toList()); // remove marked cells
+			Collections.shuffle(cells);
+			if (cells.isEmpty())
+				break; // all cells are marked
+
+			Stack<Cell> stack = new Stack<>();
+			Cell first = cells.removeFirst();
+			first.setMarked(true);
+			stack.push(first);
+
+			while (true) {
+				Cell top = stack.peek();
+
+				boolean leaveFlag = false;
+				List<Cell> neighbors = top.getNeighbors(true);
+				Collections.shuffle(neighbors);
+				for (Cell neighbor : neighbors) {
+						while (stack.contains(neighbor)) {
+							Cell c = stack.pop();
+							c.setMarked(false);
+						}	
+						leaveFlag = neighbor.isMarked();
+						neighbor.setMarked(true);
+						stack.push(neighbor);
+						break;
+				}
+				if (leaveFlag) {
+					break; // leave the loop if we found a marked cell
+				}
+			}
+
+			Cell pre = stack.pop();
+			while (!stack.isEmpty()) {
+				Cell next = stack.pop();
+				pre.breakWall(next);
+				pre = next;
+			}
+		}
 	}
 
 	/**

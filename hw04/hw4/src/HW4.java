@@ -60,9 +60,9 @@ class ExtendedCell extends Cell {
 	 * generate a perfect maze using recursive backtracking
 	 */
 	void generateRec() {
-		maze.slow();
+		// maze.slow();
 		List<Cell> neighbors = getNeighbors(true);
-		Collections.shuffle(neighbors, new Random(System.currentTimeMillis()));
+		Collections.shuffle(neighbors, new Random());
 		for (Cell neighbor : neighbors) {
 			if (neighbor.isIsolated()) {
 				breakWall(neighbor); // break the wall between the two cells

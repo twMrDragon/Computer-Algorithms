@@ -1,7 +1,5 @@
 import java.util.*;
 
-
-
 /**
  * the representation of the problem is as follows:
  * the grid has 6 columns, numbered 0 to 5 from left to right
@@ -13,7 +11,7 @@ import java.util.*;
  * - horiz[i] indicates if it is a horizontal car
  * - len[i] gives its length (2 or 3)
  * - moveOn[i] indicates on which line it moves for a horizontal car
- *  and on which column for a vertical car
+ * and on which column for a vertical car
  *
  * the car 0 is the one that must exit, so we have
  * horiz[0]==true, len[0]==2, moveOn[0]==2
@@ -25,40 +23,119 @@ class RushHour {
 	int[] len;
 	int[] moveOn;
 
-    public RushHour(int nbCars,String[] color,boolean[] horiz,int[] len,int[] moveOn){
-        this.nbCars = nbCars;
-        this.color = color;
-        this.horiz = horiz;
-        this.len = len;
-        this.moveOn = moveOn;
-    }
-    
-	
-	/** return the list of possible moves from s */
-	LinkedList<State> moves(State s) {
-        throw new Error("Method moves(State s) to be completed (Question 2)");
+	public RushHour(int nbCars, String[] color, boolean[] horiz, int[] len, int[] moveOn) {
+		this.nbCars = nbCars;
+		this.color = color;
+		this.horiz = horiz;
+		this.len = len;
+		this.moveOn = moveOn;
 	}
 
+	/** return the list of possible moves from s */
+	LinkedList<State> moves(State s) {
+		boolean [][] free = s.free();
+		LinkedList<State> res = new LinkedList<>();
+		for (int i = 0; i < nbCars; i++) {
+			int p = s.pos[i];
+			if (horiz[i]) {
+				// Move left
+				if (p > 0 && free[moveOn[i]][p - 1]) {
+					res.add(new State(s, i, -1));
+				}
+				// Move right
+				if (p + len[i] < 6 && free[moveOn[i]][p + len[i]]) {
+					res.add(new State(s, i, 1));
+				}
+			} else {
+				// Move up
+				if (p > 0 && free[p - 1][moveOn[i]]) {
+					res.add(new State(s, i, -1));
+				}
+				// Move down
+				if (p + len[i] < 6 && free[p + len[i]][moveOn[i]]) {
+					res.add(new State(s, i, 1));
+				}
+			}
+		}
+		return res;
+	}
 
-	State solveDFS(State s){
-		throw new Error("Method solveDFS(State s) to be completed (Question 3.1)");
+	State solveDFS(State s) {
+		HashSet<State> visited = new HashSet<>();
+		Stack<State> stack = new Stack<>();
+		stack.push(s);
+		while (!stack.isEmpty()) {
+			State current = stack.pop();
+			if (current.success()) {
+				return current;
+			}
+			if (!visited.contains(current)) {
+				visited.add(current);
+				for (State next : moves(current)) {
+					if (!visited.contains(next)) {
+						stack.push(next);
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/** search for a solution from state s */
 	State solveBFS(State s) {
-		throw new Error("Method solveBFS(State s) to be completed (Question 3.2)");
+		Queue<State> queue = new LinkedList<>();
+		HashSet<State> visited = new HashSet<>();
+		queue.add(s);
+		while (!queue.isEmpty()) {
+			State current = queue.poll();
+			if (current.success()) {
+				return current;
+			}
+			if (!visited.contains(current)) {
+				visited.add(current);
+				for (State next : moves(current)) {
+					if (!visited.contains(next)) {
+						queue.add(next);
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/** print the solution */
 	void printSolution(State s) {
-		throw new Error("Method printSolution(State s) to be completed (Question 4)");
-    }
+		if (s == null) {
+			System.out.println("No solution found.");
+			return;
+		}
 
-	
-	
+		LinkedList<State> path = new LinkedList<>();
+		State curr = s;
+		while (curr.prev != null) {
+			path.addFirst(curr);
+			curr = curr.prev;
+		}
+
+		System.out.println(path.size() + " trips");
+
+		// Print each move
+		for (State state : path) {
+			String color = state.plateau.color[state.c];
+			String direction;
+			if (state.plateau.horiz[state.c]) {
+				direction = state.d == 1 ? "to the right" : "to the left";
+			} else {
+				direction = state.d == 1 ? "down" : "upwards";
+			}
+			System.out.println("we move the " + color + " vehicle " + direction);
+		}
+	}
+
 }
 
-/** given the position of each car, with the following convention:
+/**
+ * given the position of each car, with the following convention:
  * for a horizontal car it is the column of its leftmost square
  * for a vertical car it is the column of its topmost square
  * (recall: the leftmost column is 0, the topmost row is 0)
@@ -74,27 +151,58 @@ class State {
 
 	/** construct an initial state (c, d and prev are not significant) */
 	public State(RushHour plateau, int[] pos) {
-		throw new Error("Constructor State(RushHour plateau, int[] pos) to be completed (Question 1.1)");
+		this.plateau = plateau;
+		this.pos = pos;
 	}
 
 	/** construct a state obtained from s by moving car c by d (-1 or +1) */
 	public State(State s, int c, int d) {
-		throw new Error("Constructor State(State s, int c, int d) to be completed (Question 1.1)");
+		this.plateau = s.plateau;
+		this.pos = s.pos.clone();
+		this.pos[c] += d; // move the car c by d
+		this.prev = s;
+		this.c = c;
+		this.d = d;
 	}
 
 	/** winning ? */
 	public boolean success() {
-		throw new Error("Method success() to be completed (Question 1.1)");
-    }
-	
+		return pos[0] == 4;
+	}
+
 	/** what are the free places */
 	public boolean[][] free() {
-		throw new Error("Method free() to be completed (Question 1.2)");
+		boolean [][] free = new boolean[6][6];
+		for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < 6; j++) {
+				free[i][j] = true;
+			}
+		}
+		for (int i = 0; i < plateau.nbCars; i++) {
+			int p = pos[i];
+			if (plateau.horiz[i]) { // horizontal car
+				for (int j = 0; j < plateau.len[i]; j++) {
+					free[plateau.moveOn[i]][p + j] = false;
+				}
+			} else { // vertical car
+				for (int j = 0; j < plateau.len[i]; j++) {
+					free[p + j][plateau.moveOn[i]] = false;
+				}
+			}
+		}
+		return free;
 	}
 
 	/** test of equality of two states */
 	public boolean equals(Object o) {
-		throw new Error("Method equals(Object o) to be completed (Question 1.2)");
+		State s = (State) o;
+		if (s == null || s.plateau != plateau || s.pos.length != pos.length)
+			return false;
+		for (int i = 0; i < pos.length; i++) {
+			if (s.pos[i] != pos[i])
+				return false;
+		}
+		return true;
 	}
 
 	/** hash code of the state */
@@ -105,6 +213,4 @@ class State {
 		return h;
 	}
 
-
 }
-
